@@ -1,4 +1,4 @@
-name: Release APK on Push
+name: Release APK & AAB on Tag
 
 on:
   push:
@@ -25,12 +25,20 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build APK
-        run: ./gradlew assembleDebug
+      # Build Release APK
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
 
-      - name: Upload Release APK
+      # Build AAB (App Bundle)
+      - name: Build Release AAB
+        run: ./gradlew bundleRelease
+
+      # Upload both
+      - name: Upload Release Files
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/debug/app-debug.apk
+          files: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/bundle/release/app-release.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
