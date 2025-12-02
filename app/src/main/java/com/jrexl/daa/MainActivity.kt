@@ -15,12 +15,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,7 +28,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,7 +41,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -50,9 +48,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jrexl.daa.ui.theme.DaaTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jrexl.daa.datastore.StoreLogininfo
+import com.jrexl.daa.viewmodels.VmPersonalInfo
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -81,7 +79,7 @@ fun loginpage(){
 }
 
 @Composable
- fun signuppage(onlogin: () -> Unit) {
+ fun signuppage(vm: VmPersonalInfo = viewModel() , onlogin: () -> Unit) {
     var phone by remember { mutableStateOf("") }
     var context = LocalContext.current
     var otp by remember { mutableStateOf("") }
@@ -132,10 +130,25 @@ fun loginpage(){
         Spacer(Modifier.height(16.dp))
         Button(onClick = {
             Log.d("phone", phone)
-//            isLoading = true
+            isLoading = true
             showotp = true
-            val phonen = "+91" + phone
-            showotp = true
+            Log.d("phone", phone)
+            vm.sendotp(phone){
+
+                res ->
+                Log.d("phone", "phone received")
+
+                isLoading = false
+                if (res == "s"){
+                    isLoading = false
+
+                }
+                else{
+                    isLoading = false
+                    Toast.makeText(context, res, Toast.LENGTH_SHORT).show()
+                }
+
+            }
 
         },
 
@@ -173,9 +186,21 @@ fun loginpage(){
 
             Spacer(Modifier.height(16.dp))
             Button(onClick = {
-//                isLoading = true
+                isLoading = true
                 password = true
-showotp = false
+                vm.verfiyotp(phone, otp){
+                    res->
+                    showotp = false
+                    if (res == "s"){
+                        isLoading = false
+                        password = true
+
+                    }
+                    else{
+                        Toast.makeText(context, res.toString(), Toast.LENGTH_LONG).show()
+                    }
+
+                }
                 val phonen = "+91" + phone.trim()
 
             },
@@ -216,12 +241,51 @@ showotp = false
             )
 
             Spacer(Modifier.height(16.dp))
-
+            val ctx = context
+            val scope = rememberCoroutineScope()
             Button(
                 onClick = {
-                    var inte = Intent(context, Homepage::class.java)
-                    context.startActivity(inte)
-                    (context as? Activity)?.finish()
+                    isLoading = true
+                    if(pass == conpass){
+                        vm.passwordSet(phone, pass){
+
+                            res ->
+                            isLoading = false
+
+                            if (res == "s"){
+                                isLoading = false
+
+                                scope.launch {
+                                    StoreLogininfo.isLoggedIn(ctx)
+                                    StoreLogininfo.saveLogin(context, phone)
+
+                                }
+                                isLoading = false
+
+                                var inte = Intent(context, Homepage::class.java)
+                                context.startActivity(inte)
+                                (context as? Activity)?.finish()
+                            }
+                            else{
+                                isLoading =false
+                                Toast.makeText(context, res.toString(), Toast.LENGTH_LONG).show()
+                            }
+
+                        }
+
+
+
+
+
+
+                    }
+                    else{
+                        isLoading = false
+                        Toast.makeText(context, "Password mismatch try again", Toast.LENGTH_LONG).show()
+                    }
+
+
+
 
 
                 },
@@ -266,8 +330,9 @@ fun LoadingOverlay(isLoading: Boolean, message: String = "Please wait...") {
 }
 
 @Composable
-fun loginp(onsignin: () -> Unit) {
-
+fun loginp(vm: VmPersonalInfo = viewModel() ,onsignin: () -> Unit) {
+    val scope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(false) }
     var phone by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var context = LocalContext.current
@@ -316,9 +381,35 @@ fun loginp(onsignin: () -> Unit) {
 
 
         Button(onClick = {
-            var inte = Intent(context, Homepage::class.java)
-            context.startActivity(inte)
-            (context as? Activity)?.finish()
+            isLoading = true
+
+
+            vm.passwordSet(phone, pass){
+
+                    res ->
+                isLoading = false
+
+                if (res == "s"){
+                    isLoading = false
+
+                    scope.launch {
+                        StoreLogininfo.isLoggedIn(context)
+                        StoreLogininfo.saveLogin(context, phone)
+
+                    }
+                    isLoading = false
+
+                    var inte = Intent(context, Homepage::class.java)
+                    context.startActivity(inte)
+                    (context as? Activity)?.finish()
+                }
+                else{
+                    isLoading =false
+                    Toast.makeText(context, res.toString(), Toast.LENGTH_LONG).show()
+                }
+
+            }
+
 
         },
             Modifier.fillMaxWidth().height(40.dp).clip(RoundedCornerShape(20.dp)).padding(end = 10.dp, start = 10.dp),
@@ -331,9 +422,11 @@ fun loginp(onsignin: () -> Unit) {
         Row(Modifier.padding(10.dp).clickable(onClick = {onsignin()})) {
             Spacer(Modifier.weight(1f))
             Text("New User")
-            Text("SignUp", color = Color.Blue)
+            Spacer(Modifier.width(5.dp))
+            Text("SignUp/Forget password", color = Color.Blue)
         }
 
+        LoadingOverlay(isLoading)
 
     }
 
@@ -363,7 +456,6 @@ fun requiretf(title: String, color: Color = Color(0xFF8A8A8A)){
         Text("*", color = Color.Red.copy(alpha = .6f), fontSize = 20.sp, fontWeight = FontWeight.Normal)
 
     }
-
 }
 
 

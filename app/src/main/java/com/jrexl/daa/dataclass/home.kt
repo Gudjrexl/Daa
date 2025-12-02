@@ -11,3 +11,4 @@ data class PersonCard(
 data class statuss( val name: String,
     val mediaimg: String,
     val isvideo: Boolean)
+

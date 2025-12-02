@@ -69,6 +69,11 @@ android {
 
 dependencies {
 
+    // Preferences DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+// (Optional) Proto DataStore if you ever need it
+    implementation("androidx.datastore:datastore:1.1.1")
+
 //    icons
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
 //    image/svg
@@ -84,9 +89,10 @@ dependencies {
 
 //    Lazygrid
     implementation("androidx.compose.foundation:foundation:1.7.2")
-
-
-
+// Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+// Gson Converter (JSON)
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
