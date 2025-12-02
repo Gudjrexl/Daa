@@ -48,6 +48,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jrexl.daa.datastore.StoreLogininfo
 import com.jrexl.daa.viewmodels.VmPersonalInfo
@@ -57,11 +58,24 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-loginpage()
+        lifecycleScope.launch {
+            val isloggedin = StoreLogininfo.isLoggedIn(this@MainActivity)
+            var phone = StoreLogininfo.getMobile(this@MainActivity)?.first()
+            if (isloggedin){
+                var inte = Intent(this@MainActivity, Homepage::class.java)
+                startActivity(inte)
+                finish()
         }
+            else{
+                setContent {
+                    loginpage()
+                }
+            }
+
+
+
     }
-}
+}}
 
 @Composable
 fun loginpage(){
