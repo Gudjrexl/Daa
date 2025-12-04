@@ -398,7 +398,7 @@ fun loginp(vm: VmPersonalInfo = viewModel() ,onsignin: () -> Unit) {
             isLoading = true
 
 
-            vm.passwordSet(phone, pass){
+            vm.passwordmatchlogin(phone, pass){
 
                     res ->
                 isLoading = false

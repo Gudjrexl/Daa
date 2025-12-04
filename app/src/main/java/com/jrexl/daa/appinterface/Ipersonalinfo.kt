@@ -17,6 +17,9 @@ interface Ipersonalinfo {
 
     @POST("/api/auth/set-password")
     suspend fun Ipassset(@Body dpasswordset: Dpasswordset) : Response<Unit>
+
+    @POST("/api/auth/login")
+    suspend fun Iloginuser(@Body dpasswordset: Dpasswordset) : Response<Unit>
 }
 
 

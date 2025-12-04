@@ -8,6 +8,7 @@ import com.jrexl.daa.dataclass.SendOtpRequest
 import com.jrexl.daa.dataclass.VerifyOtpRequest
 import com.jrexl.daa.objectapp.Opersonalinfo
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.lang.Exception
 
 class VmPersonalInfo: ViewModel() {
@@ -33,7 +34,17 @@ class VmPersonalInfo: ViewModel() {
             try {
                 val otpres = Opersonalinfo.personalapi.verifyotp(VerifyOtpRequest(mobileno, otp))
                 if (otpres.isSuccessful){
+
                     onres("s")
+                }
+                else{
+                    val errorBody = otpres.errorBody()?.string()
+
+                    val message = try {
+                        JSONObject(errorBody ?: "{}").optString("message", "Unknown error from server")
+                    } catch (e: Exception) {
+                        "Error: $errorBody"
+                    }
                 }
 
             }catch (e: kotlin.Exception){
@@ -58,7 +69,14 @@ class VmPersonalInfo: ViewModel() {
                     passres("s")
                 }
                 else{
-                    passres("error by client")
+                    val errorBody = pres.errorBody()?.string()
+
+                    val message = try {
+                        JSONObject(errorBody ?: "{}").optString("message", "Unknown error from server")
+                    } catch (e: Exception) {
+                        "Error: $errorBody"
+                    }
+                    passres(message)
                 }
             }
             catch (e: Exception){
@@ -66,6 +84,32 @@ class VmPersonalInfo: ViewModel() {
                 passres(e.toString())
             }
         }
+    }
+
+    fun passwordmatchlogin(mobileno: String, pass: String, onlogin:(String) -> Unit){
+        viewModelScope.launch {
+            try {
+                val resp = Opersonalinfo.personalapi.Iloginuser(Dpasswordset(mobileno,pass))
+                if (resp.isSuccessful){
+                    onlogin("s")
+                }
+                else{
+                    val errorBody = resp.errorBody()?.string()
+
+                    val message = try {
+                        JSONObject(errorBody ?: "{}").optString("message", "Unknown error from server")
+                    } catch (e: Exception) {
+                        "Error: $errorBody"
+                    }
+
+                    onlogin(message)                 }
+
+
+            }catch (e: Exception){
+                onlogin(e.toString())
+            }
+        }
+
     }
 
 
