@@ -46,7 +46,6 @@ class VmPersonalInfo: ViewModel() {
                         "Error: $errorBody"
                     }
                 }
-
             }catch (e: kotlin.Exception){
                 onres(e.toString())
             }
